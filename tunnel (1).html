@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurion Patrimoine — Analyse Patrimoniale Gratuite</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ap:#02539d;--green:#1D9E75;--amber:#BA7517;
+  --bg:#f5f5f3;--bg2:#fff;--bg3:#f0f0ee;
+  --txt:#1a1a1a;--txt2:#555;--txt3:#888;
+  --bdr:rgba(0,0,0,0.09);--bdr2:rgba(0,0,0,0.15);
+  --r:12px;--rs:8px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;}
+.page{display:none;min-height:100vh;}.page.on{display:block;}
+
+/* LANDING */
+.lp{background:#000;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center;position:relative;overflow:hidden;}
+.lp-grid{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(rgba(2,83,157,1) 1px,transparent 1px),linear-gradient(90deg,rgba(2,83,157,1) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+.logo{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:44px;}
+.logo-ap{width:80px;height:80px;}
+.logo-name{color:#fff;font-family:Georgia,serif;font-size:13px;font-weight:400;letter-spacing:0.45em;text-transform:uppercase;text-align:center;}
+.logo-sub{color:rgba(255,255,255,0.22);font-size:8px;letter-spacing:0.3em;text-transform:uppercase;display:block;margin-top:1px;text-align:center;}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(2,83,157,0.2);border:0.5px solid rgba(2,83,157,0.45);color:#5aafff;font-size:11px;padding:5px 14px;border-radius:20px;margin-bottom:24px;}
+.h1{color:#fff;font-size:clamp(26px,5vw,44px);font-weight:700;line-height:1.15;margin-bottom:18px;max-width:620px;}
+.h1 .blue{color:#5aafff;}
+.lp-sub{color:rgba(255,255,255,0.42);font-size:15px;line-height:1.65;max-width:500px;margin:0 auto 36px;}
+.stats{display:flex;gap:40px;margin-bottom:44px;flex-wrap:wrap;justify-content:center;}
+.stat-val{font-size:26px;font-weight:700;color:#5aafff;}
+.stat-lbl{font-size:10px;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.12em;margin-top:3px;}
+.lp-btn{background:var(--ap);color:#fff;padding:17px 40px;border-radius:var(--rs);font-size:16px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;width:100%;max-width:380px;display:block;text-align:center;}
+.lp-btn:hover{background:#0362b8;transform:translateY(-2px);}
+.lp-note{color:rgba(255,255,255,0.2);font-size:11px;margin-top:10px;}
+.proof{display:flex;gap:22px;margin-top:36px;flex-wrap:wrap;justify-content:center;}
+.proof-item{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,0.28);font-size:11px;}
+.chk{width:14px;height:14px;border-radius:50%;background:rgba(29,158,117,0.2);border:0.5px solid rgba(29,158,117,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* FUNNEL */
+.fw{max-width:600px;margin:0 auto;padding:24px 16px 60px;}
+.fc{border-radius:var(--r);overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.08);}
+.fh{background:#000;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+.fhl{display:flex;align-items:center;gap:10px;}
+.fhl svg{width:32px;height:32px;}
+.fh-name{color:#fff;font-size:13px;font-weight:600;}
+.fh-sub{color:rgba(255,255,255,0.22);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;display:block;margin-top:1px;}
+.fh-step{font-size:11px;color:rgba(255,255,255,0.3);}
+.pt{height:3px;background:rgba(255,255,255,0.08);}
+.pf{height:100%;background:var(--ap);transition:width 0.45s ease;}
+.fb{background:var(--bg2);padding:28px 24px;}
+.dots{display:flex;align-items:center;gap:7px;margin-bottom:22px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--bdr2);transition:all 0.3s;}
+.dot.a{background:var(--ap);transform:scale(1.25);}
+.dot.d{background:var(--green);}
+.dot-lbl{font-size:10px;color:var(--txt3);margin-left:4px;}
+.qt{font-size:21px;font-weight:700;color:var(--txt);margin-bottom:7px;line-height:1.3;}
+.qs{font-size:13px;color:var(--txt2);margin-bottom:22px;line-height:1.55;}
+
+/* Options */
+.opts{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
+.opt{border:1.5px solid var(--bdr2);border-radius:var(--rs);padding:14px 16px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:12px;background:var(--bg2);}
+.opt:hover{border-color:var(--ap);background:rgba(2,83,157,0.025);}
+.opt.sel{border-color:var(--ap);background:rgba(2,83,157,0.06);}
+.opt.sel .orb{background:var(--ap);border-color:var(--ap);}
+.opt.sel .orb::after{display:block;}
+.orb{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--bdr2);flex-shrink:0;position:relative;transition:all 0.18s;}
+.orb::after{content:'';display:none;width:8px;height:8px;background:#fff;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
+.ot{font-size:14px;font-weight:500;color:var(--txt);}
+.od{font-size:11px;color:var(--txt3);margin-top:1px;}
+
+/* Profile cards */
+.pcards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+@media(max-width:420px){.pcards{grid-template-columns:1fr;}}
+.pc{border:2px solid var(--bdr2);border-radius:var(--rs);padding:16px 12px;cursor:pointer;text-align:center;transition:all 0.2s;background:var(--bg2);}
+.pc:hover{transform:translateY(-2px);}
+.pc.sp{border-color:#1D9E75;background:rgba(29,158,117,0.06);}
+.pc.se{border-color:#02539d;background:rgba(2,83,157,0.06);}
+.pc.sd{border-color:#BA7517;background:rgba(186,117,23,0.06);}
+.pc-emoji{font-size:28px;margin-bottom:8px;}
+.pc-name{font-size:13px;font-weight:700;margin-bottom:3px;}
+.pc-rate{font-size:20px;font-weight:800;margin-bottom:3px;}
+.pc-desc{font-size:10px;color:var(--txt3);line-height:1.4;}
+
+/* Inputs */
+.field{margin-bottom:14px;}
+.field label{font-size:12px;font-weight:500;color:var(--txt2);display:block;margin-bottom:6px;}
+.finput{width:100%;padding:12px 14px;border:1.5px solid var(--bdr2);border-radius:var(--rs);font-size:16px;font-weight:600;font-family:inherit;outline:none;transition:border-color 0.2s;background:var(--bg2);color:var(--txt);}
+.finput:focus{border-color:var(--ap);}
+.fhint{font-size:11px;color:var(--txt3);margin-top:4px;}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+
+/* PER Preview */
+.per-preview{background:#000;border-radius:var(--rs);padding:16px;margin:12px 0 16px;display:none;}
+.pp-title{color:rgba(255,255,255,0.35);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:12px;}
+.pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pp-val{font-size:16px;font-weight:700;line-height:1;}
+.pp-lbl{font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;}
+
+/* Consent */
+.consent{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px;margin-top:6px;}
+.consent input{margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:var(--ap);cursor:pointer;}
+.consent label{font-size:11px;color:var(--txt3);line-height:1.55;cursor:pointer;}
+
+/* Buttons */
+.btn{width:100%;padding:14px;background:var(--ap);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.btn:hover:not(:disabled){background:#0362b8;}
+.btn:disabled{background:var(--bdr2);color:var(--txt3);cursor:not-allowed;}
+.btn-back{background:none;border:none;color:var(--txt3);font-size:13px;cursor:pointer;padding:0 0 16px;font-family:inherit;display:flex;align-items:center;gap:4px;}
+
+/* Results */
+.res-hero{background:#000;border-radius:var(--r);padding:22px;text-align:center;margin-bottom:14px;}
+.rbadge{display:inline-block;font-size:11px;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:12px;}
+.rbadge.hot{background:rgba(29,158,117,0.18);color:#1D9E75;border:0.5px solid rgba(29,158,117,0.4);}
+.rbadge.warm{background:rgba(186,117,23,0.18);color:#EF9F27;border:0.5px solid rgba(186,117,23,0.4);}
+.res-title{color:#fff;font-size:clamp(16px,3.5vw,22px);font-weight:700;margin-bottom:7px;line-height:1.3;}
+.res-sub{color:rgba(255,255,255,0.38);font-size:12px;line-height:1.55;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.sc{background:var(--bg3);border:0.5px solid var(--bdr);border-radius:var(--rs);padding:12px;text-align:center;}
+.sc.ab{border-top:2px solid var(--ap);}
+.sc.gb{border-top:2px solid var(--green);}
+.sc.ob{border-top:2px solid var(--amber);}
+.sc-val{font-size:15px;font-weight:700;}
+.sc-val.b{color:var(--ap);}.sc-val.g{color:var(--green);}.sc-val.o{color:var(--amber);}
+.sc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt3);margin-top:2px;}
+.bench-wrap{background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.bench-head{padding:12px 16px;background:var(--bg3);border-bottom:0.5px solid var(--bdr);font-size:13px;font-weight:600;}
+.bt{width:100%;border-collapse:collapse;font-size:12px;}
+.bt th{padding:8px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--txt3);border-bottom:1px solid var(--bdr);}
+.bt td{padding:10px 12px;border-bottom:0.5px solid var(--bdr);}
+.bt tr:last-child td{border-bottom:none;}
+.bt tr.sr td{font-weight:700;background:rgba(2,83,157,0.03);}
+.bdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+.sbadge{font-size:8px;background:var(--ap);color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px;vertical-align:middle;}
+.chart-wrap{background:var(--bg2);border:0.5px solid var(--bdr);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.chart-head{padding:12px 16px;background:var(--bg3);border-bottom:0.5px solid var(--bdr);}
+.chart-head h3{font-size:13px;font-weight:600;}
+.chart-head p{font-size:11px;color:var(--txt3);margin-top:2px;}
+.chart-body{padding:16px;}
+.cleg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;}
+.li{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--txt2);}
+.ld{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.disc{font-size:10px;color:var(--txt3);text-align:center;margin-top:14px;line-height:1.6;}
+.restart{display:block;text-align:center;margin-top:10px;color:var(--txt3);font-size:13px;cursor:pointer;text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<!-- ===== LANDING ===== -->
+<div class="page on" id="p-landing">
+  <div class="lp">
+    <div class="lp-grid"></div>
+
+    <!-- LOGO FIDÈLE : A/P serif + AURION PATRIMOINE espacé -->
+    <div class="logo">
+      <svg class="logo-ap" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="130" font-family="Georgia,serif" font-size="115" font-weight="400" fill="white">A</text>
+        <text x="85" y="175" font-family="Georgia,serif" font-size="105" font-weight="400" fill="white">P</text>
+      </svg>
+      <div>
+        <div class="logo-name">Aurion Patrimoine</div>
+        <span class="logo-sub">Conseil en gestion de patrimoine indépendant</span>
+      </div>
+    </div>
+
+    <div class="badge"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#5aafff"/></svg>Analyse patrimoniale 100 % gratuite</div>
+    <h1 class="h1">Combien l'État vous <span class="blue">doit-il chaque année ?</span></h1>
+    <p class="lp-sub">5 questions. Découvrez exactement combien vous économisez sur vos impôts grâce au PER, votre capital projeté et votre revenu à la retraite.</p>
+
+    <div class="stats">
+      <div><div class="stat-val">2 min</div><div class="stat-lbl">Pour compléter</div></div>
+      <div><div class="stat-val">100%</div><div class="stat-lbl">Gratuit</div></div>
+      <div><div class="stat-val">Sans</div><div class="stat-lbl">Engagement</div></div>
+    </div>
+
+    <button class="lp-btn" onclick="startFunnel()">Calculer mon avantage fiscal →</button>
+    <div class="lp-note">Sans inscription · Résultat immédiat · Conseil indépendant</div>
+
+    <div class="proof">
+      <div class="proof-item"><div class="chk"><svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="#1D9E75" stroke-width="1.2" stroke-linecap="round"/></svg></div>Cabinet indépendant</div>
+      <div class="proof-item"><div class="chk"><svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="#1D9E75" stroke-width="1.2" stroke-linecap="round"/></svg></div>Données sécurisées</div>
+      <div class="proof-item"><div class="chk"><svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="#1D9E75" stroke-width="1.2" stroke-linecap="round"/></svg></div>Aucun démarchage</div>
+      <div class="proof-item"><div class="chk"><svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="#1D9E75" stroke-width="1.2" stroke-linecap="round"/></svg></div>Résultat immédiat</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FUNNEL ===== -->
+<div class="page" id="p-funnel">
+  <div class="fw">
+    <div class="fc">
+      <div class="fh">
+        <div class="fhl">
+          <svg viewBox="0 0 200 200" fill="none" style="width:34px;height:34px;"><text x="10" y="130" font-family="Georgia,serif" font-size="115" fill="white">A</text><text x="85" y="175" font-family="Georgia,serif" font-size="105" fill="white">P</text></svg>
+          <div><div class="fh-name">Aurion Patrimoine</div><span class="fh-sub">Analyse patrimoniale</span></div>
+        </div>
+        <div class="fh-step" id="fh-step">Étape 1 / 5</div>
+      </div>
+      <div class="pt"><div class="pf" id="prog" style="width:20%"></div></div>
+      <div class="fb" id="fb"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RÉSULTATS ===== -->
+<div class="page" id="p-result">
+  <div class="fw">
+    <div class="fc">
+      <div class="fh">
+        <div class="fhl">
+          <svg viewBox="0 0 200 200" fill="none" style="width:34px;height:34px;"><text x="10" y="130" font-family="Georgia,serif" font-size="115" fill="white">A</text><text x="85" y="175" font-family="Georgia,serif" font-size="105" fill="white">P</text></svg>
+          <div><div class="fh-name">Aurion Patrimoine</div><span class="fh-sub">Votre analyse personnalisée</span></div>
+        </div>
+        <div style="font-size:11px;color:#1D9E75;font-weight:600;">✓ Analyse complète</div>
+      </div>
+      <div style="height:3px;background:#1D9E75;"></div>
+      <div class="fb" id="res-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIGURATION WEBHOOK =====
+// Remplacez cette URL par celle de votre webhook Make.com
+const WEBHOOK_URL = 'https://hook.eu1.make.com/h918l7npmwaqxhxr1mo6if265v2jblau';
+
+// ===== UTILS =====
+const fmt  = n => Math.round(n).toLocaleString('fr-FR') + ' €';
+const fmtK = n => { const v=Math.round(n); return v>=1000 ? Math.round(v/1000)+'k€' : v+'€'; };
+
+// Plafond PER légal 2024 — Art. 163 quatervicies CGI
+// = 10% du revenu net fiscal (brut après abattement 10%) · min 4399 · max 35194
+function plafondPER(brut) {
+  return Math.min(Math.max(brut * 0.9 * 0.10, 4399), 35194);
+}
+
+function calcCap(mensuel, ans, taux) {
+  const r = taux / 12, n = ans * 12;
+  if (r === 0) return mensuel * n;
+  return mensuel * ((Math.pow(1+r, n) - 1) / r) * (1+r);
+}
+
+function calcRev(capital, duree, taux) {
+  const r = taux / 12, n = duree * 12;
+  if (r === 0) return Math.round(capital / n);
+  return Math.round(capital * r / (1 - Math.pow(1+r, -n)));
+}
+
+// ===== ÉTAT =====
+const TOTAL = 5;
+let step = 0, ans = {}, selVal = null, profil = null, chart = null;
+
+const PROFILS = {
+  prudent:  { label:'Prudent',   taux:0.04,  color:'#1D9E75', cls:'sp', emoji:'🛡️', desc:'Fonds euros · capital garanti' },
+  equilibre:{ label:'Équilibré', taux:0.065, color:'#02539d', cls:'se', emoji:'⚖️', desc:'Mix sécurité + performance' },
+  dynamique:{ label:'Dynamique', taux:0.09,  color:'#BA7517', cls:'sd', emoji:'🚀', desc:'Unités de compte · long terme' },
+};
+
+const QUESTIONS = [
+  { id:'profil',    type:'profil' },
+  { id:'statut',    type:'choice',
+    title:'Quel est votre statut professionnel ?',
+    sub:'Votre statut détermine les solutions les plus avantageuses pour vous.',
+    opts:[
+      { v:'salarie',     t:'Salarié(e)',                      d:'CDI, CDD — secteur privé ou public' },
+      { v:'cadre',       t:'Cadre supérieur',                 d:'Manager, responsable, directeur salarié' },
+      { v:'dirigeant',   t:'Dirigeant / Chef d\'entreprise',  d:'Gérant, PDG, associé majoritaire' },
+      { v:'liberal',     t:'Profession libérale',             d:'Médecin, avocat, expert-comptable, notaire…' },
+      { v:'independant', t:'Indépendant / Freelance',         d:'Auto-entrepreneur, consultant, artisan' },
+    ]
+  },
+  { id:'situation', type:'choice',
+    title:'Quelle est votre situation personnelle ?',
+    sub:'Ces informations affinent les solutions adaptées à votre foyer.',
+    opts:[
+      { v:'celibataire',  t:'Célibataire',   d:'Sans enfant à charge' },
+      { v:'couple',       t:'En couple',      d:'Marié(e) ou pacsé(e), sans enfant' },
+      { v:'famille',      t:'En famille',     d:'Marié(e) ou pacsé(e), avec enfant(s)' },
+      { v:'monoparental', t:'Parent isolé',   d:'Avec enfant(s) à charge' },
+    ]
+  },
+  { id:'salaire',   type:'salaire' },
+  { id:'tmi',       type:'choice',
+    title:'Quelle est votre tranche marginale d\'imposition ?',
+    sub:'La tranche la plus haute sur votre dernier avis d\'imposition.',
+    opts:[
+      { v:'t0',  t:'Non imposable — 0 %',    d:'Pas d\'impôt sur le revenu' },
+      { v:'t11', t:'Tranche à 11 %',          d:'Revenus modérés' },
+      { v:'t30', t:'Tranche à 30 %',          d:'Revenus intermédiaires — fort avantage PER' },
+      { v:'t41', t:'Tranche à 41 % ou 45 %', d:'Hauts revenus — avantage fiscal maximal' },
+    ]
+  },
+];
+
+// ===== NAVIGATION =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0, 0);
+}
+
+function startFunnel() {
+  step = 0; ans = {}; selVal = null; profil = null; chart = null;
+  showPage('p-funnel');
+  render();
+}
+
+function goBack() {
+  if (step > 0) { step--; render(); }
+  else showPage('p-landing');
+}
+
+// ===== RENDER =====
+function render() {
+  const q = QUESTIONS[step];
+  const pct = Math.round((step+1) / TOTAL * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('fh-step').textContent = 'Étape ' + (step+1) + ' / ' + TOTAL;
+  selVal = null;
+
+  // Dots
+  let dotsHtml = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const c = i < step ? 'd' : i === step ? 'a' : '';
+    dotsHtml += '<div class="dot ' + c + '"></div>';
+  }
+  dotsHtml += '<span class="dot-lbl">' + (step+1) + ' sur ' + TOTAL + '</span>';
+
+  let html = '';
+  if (step > 0) html += '<button class="btn-back" onclick="goBack()">← Retour</button>';
+  html += '<div class="dots">' + dotsHtml + '</div>';
+
+  if (q.type === 'profil') {
+    html += '<div class="qt">Quel est votre profil investisseur ?</div>';
+    html += '<div class="qs">Choisissez le profil qui correspond à votre rapport au risque et à la performance.</div>';
+    html += '<div class="pcards">';
+    Object.entries(PROFILS).forEach(function(entry) {
+      const k = entry[0], p = entry[1];
+      const sel = profil === k ? p.cls : '';
+      html += '<div class="pc ' + sel + '" onclick="selProfil(\'' + k + '\',this)">';
+      html += '<div class="pc-emoji">' + p.emoji + '</div>';
+      html += '<div class="pc-name">' + p.label + '</div>';
+      html += '<div class="pc-rate" style="color:' + p.color + '">' + (p.taux*100).toFixed(1) + ' %</div>';
+      html += '<div class="pc-desc">' + p.desc + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<button class="btn" id="btn-n" onclick="nextStep()" ' + (!profil ? 'disabled' : '') + '>Continuer →</button>';
+
+  } else if (q.type === 'salaire') {
+    html += '<div class="qt">Votre salaire et votre âge</div>';
+    html += '<div class="qs">Ces deux données permettent de calculer votre plafond PER exact et votre horizon jusqu\'à la retraite à 64 ans.</div>';
+    html += '<div class="field"><label>Salaire annuel brut *</label>';
+    html += '<input class="finput" type="number" id="sal" placeholder="ex : 60000" min="15000" max="1000000" oninput="updatePreview()">';
+    html += '<div class="fhint">Le plafond PER = 10% de votre revenu net fiscal · Min 4 399 € · Max 35 194 €</div></div>';
+    html += '<div class="field"><label>Votre âge actuel *</label>';
+    html += '<input class="finput" type="number" id="age" placeholder="ex : 38" min="18" max="63" oninput="updatePreview()">';
+    html += '<div class="fhint">L\'horizon est calculé automatiquement : 64 ans (légal) − votre âge</div></div>';
+    html += '<div class="per-preview" id="per-prev">';
+    html += '<div class="pp-title">📊 Votre potentiel PER — calcul exact 2024</div>';
+    html += '<div class="pp-grid">';
+    html += '<div><div class="pp-val" id="pp-plafond" style="color:#5aafff">—</div><div class="pp-lbl">Plafond PER / an</div></div>';
+    html += '<div><div class="pp-val" id="pp-eco" style="color:#1D9E75">—</div><div class="pp-lbl">Économie fiscale / an *</div></div>';
+    html += '<div><div class="pp-val" id="pp-mois" style="color:#fff">—</div><div class="pp-lbl">Mois offerts par l\'État</div></div>';
+    html += '<div><div class="pp-val" id="pp-horizon" style="color:#EF9F27">—</div><div class="pp-lbl">Horizon retraite</div></div>';
+    html += '</div>';
+    html += '<div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;">* TMI 30% utilisée par défaut — affinée à l\'étape suivante</div>';
+    html += '</div>';
+    html += '<button class="btn" id="btn-n" onclick="nextSalaire()" disabled>Continuer →</button>';
+
+  } else {
+    html += '<div class="qt">' + q.title + '</div>';
+    html += '<div class="qs">' + q.sub + '</div>';
+    html += '<div class="opts">';
+    q.opts.forEach(function(o) {
+      html += '<div class="opt" onclick="selOpt(\'' + o.v + '\',this)">';
+      html += '<div class="orb"></div><div><div class="ot">' + o.t + '</div><div class="od">' + o.d + '</div></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    if (step === TOTAL - 1) {
+      html += '<div class="field"><label>Votre prénom *</label><input class="finput" type="text" id="f-prenom" placeholder="Votre prénom"></div>';
+      html += '<div class="field"><label>Votre email *</label><input class="finput" type="email" id="f-email" placeholder="votre@email.com"></div>';
+      html += '<div class="field"><label>Votre téléphone *</label><input class="finput" type="tel" id="f-tel" placeholder="06 00 00 00 00"></div>';
+      html += '<div class="consent"><input type="checkbox" id="consent"><label for="consent">J\'accepte d\'être contacté par Aurion Patrimoine pour recevoir mon analyse personnalisée. Données confidentielles, sans démarchage.</label></div>';
+      html += '<button class="btn" id="btn-n" onclick="submitFunnel()" disabled>Recevoir mon analyse →</button>';
+    } else {
+      html += '<button class="btn" id="btn-n" onclick="nextStep()" disabled>Continuer →</button>';
+    }
+  }
+
+  document.getElementById('fb').innerHTML = html;
+
+  // Restore profil selection visually
+  if (q.type === 'profil' && profil) {
+    const cards = document.querySelectorAll('.pc');
+    const keys = Object.keys(PROFILS);
+    const idx = keys.indexOf(profil);
+    if (idx >= 0 && cards[idx]) cards[idx].classList.add(PROFILS[profil].cls);
+  }
+}
+
+// ===== INTERACTIONS =====
+function selOpt(v, el) {
+  document.querySelectorAll('.opt').forEach(function(o) { o.classList.remove('sel'); });
+  el.classList.add('sel');
+  selVal = v;
+  const btn = document.getElementById('btn-n');
+  if (btn) btn.disabled = false;
+}
+
+function selProfil(k, el) {
+  profil = k;
+  document.querySelectorAll('.pc').forEach(function(c) { c.classList.remove('sp','se','sd'); });
+  el.classList.add(PROFILS[k].cls);
+  const btn = document.getElementById('btn-n');
+  if (btn) btn.disabled = false;
+}
+
+function nextStep() {
+  if (QUESTIONS[step].type === 'profil') {
+    if (!profil) return;
+    ans.profil = profil;
+  } else {
+    if (!selVal) return;
+    ans[QUESTIONS[step].id] = selVal;
+  }
+  step++;
+  render();
+}
+
+function updatePreview() {
+  const salEl = document.getElementById('sal');
+  const ageEl = document.getElementById('age');
+  if (!salEl || !ageEl) return;
+  const sal = parseFloat(salEl.value) || 0;
+  const age = parseInt(ageEl.value) || 0;
+  const preview = document.getElementById('per-prev');
+  const btn = document.getElementById('btn-n');
+  const ok = sal >= 15000 && age >= 18 && age <= 63;
+  if (ok) {
+    const plafond = plafondPER(sal);
+    const tmiVal = 0.30; // default preview
+    const eco = Math.round(plafond * tmiVal);
+    const mensEco = Math.round(eco / 12);
+    const horizon = 64 - age;
+    preview.style.display = 'block';
+    document.getElementById('pp-plafond').textContent = fmt(Math.round(plafond));
+    document.getElementById('pp-eco').textContent = fmt(eco);
+    document.getElementById('pp-mois').textContent = fmt(mensEco) + '/mois';
+    document.getElementById('pp-horizon').textContent = horizon + ' ans';
+    btn.disabled = false;
+  } else {
+    preview.style.display = 'none';
+    btn.disabled = true;
+  }
+}
+
+function nextSalaire() {
+  const sal = parseFloat(document.getElementById('sal')?.value) || 0;
+  const age = parseInt(document.getElementById('age')?.value) || 0;
+  if (sal < 15000) { alert('Merci de saisir votre salaire annuel brut.'); return; }
+  if (age < 18 || age > 63) { alert('Merci de saisir votre âge (entre 18 et 63 ans).'); return; }
+  ans.salaire = sal;
+  ans.age = age;
+  step++;
+  render();
+}
+
+function submitFunnel() {
+  if (!selVal) return;
+  ans[QUESTIONS[step].id] = selVal;
+  const prenom = (document.getElementById('f-prenom')?.value || '').trim();
+  const consent = document.getElementById('consent')?.checked;
+  if (!prenom) { alert('Merci de saisir votre prénom.'); return; }
+  if (!consent) { alert('Merci d\'accepter les conditions.'); return; }
+  // Envoi des données vers Make.com (Google Sheets + Email auto)
+  sendToMake(prenom);
+  showResult(prenom);
+}
+
+function sendToMake(prenom) {
+  if (!WEBHOOK_URL || WEBHOOK_URL === 'VOTRE_URL_MAKE_ICI') return;
+  const salaireBrut = ans.salaire || 0;
+  const age = ans.age || 0;
+  const tmi = ans.tmi || '';
+  const prof = ans.profil || '';
+  const statut = ans.statut || '';
+  const situation = ans.situation || '';
+  const tmiVal = tmi==='t41'?0.41:tmi==='t30'?0.30:tmi==='t11'?0.11:0;
+  const tmiPct = Math.round(tmiVal*100);
+  const plafond = Math.round(salaireBrut * 0.9 * 0.10);
+  const plafondFinal = Math.min(Math.max(plafond, 4399), 35194);
+  const ecoAn = Math.round(plafondFinal * tmiVal);
+  const ecoMens = Math.round(ecoAn / 12);
+  const horizon = Math.max(1, 64 - age);
+  const versMens = Math.round(plafondFinal / 12);
+  const r = 0.065/12, n = horizon*12;
+  const capital = Math.round(versMens * ((Math.pow(1+r,n)-1)/r) * (1+r));
+  const revMens = Math.round(capital * r / (1 - Math.pow(1+r, -240)));
+  const ecoTotale = ecoAn * horizon;
+  const score = (['cadre','dirigeant','liberal'].includes(statut) || tmiVal>=0.30) ? 'Chaud 🔥' : 'Tiède';
+  const statutLabel = {dirigeant:'Dirigeant',liberal:'Profession libérale',cadre:'Cadre supérieur',independant:'Indépendant',salarie:'Salarié'}[statut]||statut;
+  const tmiLabel = {t41:'41-45 %',t30:'30 %',t11:'11 %',t0:'0 %'}[tmi]||tmi;
+  const profilLabel = {prudent:'Prudent (4 %)',equilibre:'Équilibré (6,5 %)',dynamique:'Dynamique (9 %)'}[prof]||prof;
+  const sitLabel = {celibataire:'Célibataire',couple:'En couple',famille:'En famille',monoparental:'Parent isolé'}[situation]||situation;
+  const email = document.getElementById('f-email')?.value || '';
+  const tel   = document.getElementById('f-tel')?.value || '';
+  const payload = {
+    prenom, email, telephone: tel,
+    age, statut: statutLabel, situation: sitLabel,
+    salaire: salaireBrut + ' €', tmi: tmiLabel,
+    profil: profilLabel, horizon: horizon + ' ans',
+    plafond_per: plafondFinal.toLocaleString('fr-FR') + ' €',
+    eco_fiscale: ecoAn.toLocaleString('fr-FR') + ' €',
+    eco_mensuelle: ecoMens.toLocaleString('fr-FR') + ' €/mois',
+    eco_totale: ecoTotale.toLocaleString('fr-FR') + ' €',
+    capital: capital.toLocaleString('fr-FR') + ' €',
+    revenu_mensuel: revMens.toLocaleString('fr-FR') + ' €/mois',
+    score, date: new Date().toLocaleString('fr-FR')
+  };
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(function() {});
+}
+
+// ===== RÉSULTATS =====
+function showResult(prenom) {
+  const salaireBrut = ans.salaire || 60000;
+  const age = ans.age || 40;
+  const tmi = ans.tmi || 't30';
+  const prof = ans.profil || 'equilibre';
+  const statut = ans.statut || 'salarie';
+
+  const tmiVal = tmi==='t41'?0.41 : tmi==='t30'?0.30 : tmi==='t11'?0.11 : 0;
+  const tmiPct = Math.round(tmiVal * 100);
+
+  // Horizon automatique : 64 - âge
+  const horizon = Math.max(1, 64 - age);
+  const dureeRachat = 20;
+
+  // Plafond PER exact
+  const plafond = plafondPER(salaireBrut);
+  const versMens = Math.round(plafond / 12);
+  const ecoAn = Math.round(plafond * tmiVal);
+  const ecoMens = Math.round(ecoAn / 12);
+  const effortNet = versMens - ecoMens;
+  const ecoTotale = ecoAn * horizon;
+
+  // Calcul capital & revenu
+  const caps = {}, revs = {};
+  Object.entries(PROFILS).forEach(function(entry) {
+    const k = entry[0], p = entry[1];
+    caps[k] = Math.round(calcCap(versMens, horizon, p.taux));
+    revs[k] = calcRev(caps[k], dureeRachat, p.taux);
+  });
+  const capSel = caps[prof];
+  const revSel = revs[prof];
+  const col = PROFILS[prof].color;
+
+  const qualifie = ['cadre','dirigeant','liberal'].includes(statut) || tmiVal >= 0.30;
+  const badge = qualifie ? 'hot' : 'warm';
+  const titleTxt = ecoAn > 0
+    ? (prenom + ', l\'État vous doit ' + fmt(ecoAn) + ' par an.')
+    : (prenom + ', votre patrimoine mérite une stratégie.');
+  const subTxt = ecoAn > 0
+    ? 'Et vous ne les récupérez pas encore. 30 minutes avec Yamin suffisent pour changer ça.'
+    : 'Un entretien de 30 minutes pour mettre en place votre stratégie patrimoniale.';
+
+  const statutLabel = {
+    dirigeant:'Dirigeant', liberal:'Profession libérale',
+    cadre:'Cadre supérieur', independant:'Indépendant', salarie:'Salarié'
+  }[statut] || 'Salarié';
+
+  // HTML des résultats
+  let html = '';
+
+  html += '<div class="res-hero">';
+  html += '<div class="rbadge ' + badge + '">' + (qualifie?'Profil qualifié — Priorité haute':'Profil à accompagner') + '</div>';
+  html += '<div class="res-title">' + titleTxt + '</div>';
+  html += '<div class="res-sub">' + subTxt + '</div>';
+  html += '</div>';
+
+  html += '<div class="g3">';
+  html += '<div class="sc ab"><div class="sc-val b">' + fmt(salaireBrut) + '</div><div class="sc-lbl">Salaire brut/an</div></div>';
+  html += '<div class="sc"><div class="sc-val">' + age + ' ans</div><div class="sc-lbl">Âge actuel</div></div>';
+  html += '<div class="sc"><div class="sc-val">' + horizon + ' ans</div><div class="sc-lbl">Horizon retraite</div></div>';
+  html += '</div>';
+
+  if (ecoAn > 0) {
+    html += '<div style="background:#000;border-radius:12px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;">';
+    html += '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1D9E75,#02539d);"></div>';
+    html += '<div style="font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;">💡 Votre avantage fiscal PER — calcul exact 2024</div>';
+    html += '<div style="font-size:clamp(20px,4vw,30px);font-weight:800;color:#1D9E75;line-height:1.1;margin-bottom:10px;">';
+    html += 'En ouvrant un PER aujourd\'hui,<br>';
+    html += '<span style="color:#fff;">l\'État vous rembourse ' + fmt(ecoAn) + '</span><br>';
+    html += '<span style="font-size:clamp(13px,2.5vw,17px);font-weight:600;color:rgba(255,255,255,0.5);">chaque année — soit ' + fmt(ecoMens) + ' par mois offerts.</span>';
+    html += '</div>';
+    html += '<div style="background:rgba(29,158,117,0.1);border:0.5px solid rgba(29,158,117,0.25);border-radius:8px;padding:13px;margin-bottom:14px;">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;text-align:center;">';
+    html += '<div><div style="font-size:14px;font-weight:700;color:#5aafff;">' + fmt(Math.round(salaireBrut)) + '</div><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-top:2px;">Salaire brut</div></div>';
+    html += '<div><div style="font-size:14px;font-weight:700;color:#fff;">' + fmt(Math.round(plafond)) + '</div><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-top:2px;">Plafond PER/an</div></div>';
+    html += '<div><div style="font-size:14px;font-weight:700;color:#EF9F27;">− ' + tmiPct + ' %</div><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-top:2px;">Votre TMI</div></div>';
+    html += '<div><div style="font-size:14px;font-weight:700;color:#1D9E75;">' + fmt(ecoAn) + '</div><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-top:2px;">Économie/an</div></div>';
+    html += '</div></div>';
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.42);line-height:1.6;margin-bottom:14px;">';
+    html += 'Vous versez <strong style="color:#fff;">' + fmt(versMens) + '/mois</strong> sur votre PER, votre effort réel est seulement <strong style="color:#1D9E75;">' + fmt(effortNet) + '/mois</strong>. Sur ' + horizon + ' ans : <strong style="color:#1D9E75;">' + fmt(ecoTotale) + '</strong> financés par l\'État.';
+    html += '</div>';
+    html += '<div style="background:#02539d;border-radius:8px;padding:16px;text-align:center;">';
+    html += '<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:6px;">⚡ Chaque mois sans PER = ' + fmt(ecoMens) + ' perdus</div>';
+    html += '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:12px;">Yamin vous explique comment récupérer ces ' + fmt(ecoAn) + ' en 30 min.</div>';
+    html += '<a href="https://calendly.com/yamin-benhenia/rendez-vous-avec-yamin" target="_blank" style="display:block;background:#fff;color:#02539d;padding:13px 20px;border-radius:8px;font-size:14px;font-weight:800;text-decoration:none;margin-bottom:6px;">📅 Je veux récupérer mes ' + fmt(ecoAn) + ' →</a>';
+    html += '<div style="font-size:10px;color:rgba(255,255,255,0.3);">30 min · Gratuit · Sans engagement · Conseil indépendant</div>';
+    html += '</div></div>';
+  }
+
+  // Stats capital/revenu
+  html += '<div class="g3">';
+  html += '<div class="sc ab"><div class="sc-val b">' + fmt(capSel) + '</div><div class="sc-lbl">Capital retraite</div></div>';
+  html += '<div class="sc gb"><div class="sc-val g">' + fmt(revSel) + '</div><div class="sc-lbl">Revenu/mois</div></div>';
+  html += '<div class="sc ob"><div class="sc-val o">' + fmt(versMens) + '</div><div class="sc-lbl">Versement PER/mois</div></div>';
+  html += '</div>';
+
+  // Benchmark
+  html += '<div class="bench-wrap">';
+  html += '<div class="bench-head">Comparaison des 3 profils — ' + fmt(versMens) + '/mois sur ' + horizon + ' ans</div>';
+  html += '<div style="overflow-x:auto;"><table class="bt"><thead><tr><th>Profil</th><th>Taux</th><th>Capital retraite</th><th>Revenu/mois</th><th>Revenu/an</th></tr></thead><tbody>';
+  Object.entries(PROFILS).forEach(function(entry) {
+    const k = entry[0], p = entry[1];
+    const isSel = k === prof;
+    html += '<tr class="' + (isSel?'sr':'') + '">';
+    html += '<td><span class="bdot" style="background:' + p.color + '"></span>' + (isSel?'<strong>':'') + 'Profil ' + p.label + (isSel?'</strong>':'') + (isSel?' <span class="sbadge">Votre profil</span>':'') + '</td>';
+    html += '<td style="color:' + p.color + ';font-weight:600;">' + (p.taux*100).toFixed(1) + ' %</td>';
+    html += '<td style="font-weight:' + (isSel?700:400) + '">' + fmt(caps[k]) + '</td>';
+    html += '<td style="color:' + (isSel?'#1D9E75':'inherit') + ';font-weight:' + (isSel?700:400) + '">' + fmt(revs[k]) + '/mois</td>';
+    html += '<td>' + fmt(revs[k]*12) + '/an</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  // Chart
+  html += '<div class="chart-wrap"><div class="chart-head"><h3>Projection du capital sur ' + horizon + ' ans</h3><p>' + fmt(versMens) + '/mois · retraite à 64 ans</p></div><div class="chart-body">';
+  html += '<div class="cleg"><div class="li"><span class="ld" style="background:#1D9E75"></span>Prudent</div><div class="li"><span class="ld" style="background:#02539d"></span>Équilibré</div><div class="li"><span class="ld" style="background:#BA7517"></span>Dynamique</div></div>';
+  html += '<div style="position:relative;height:200px;"><canvas id="projChart"></canvas></div></div></div>';
+
+  // CTA final
+  html += '<div style="background:#000;border-radius:12px;padding:24px 20px;text-align:center;margin-bottom:14px;border:0.5px solid rgba(2,83,157,0.3);">';
+  html += '<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:12px;">Aurion Patrimoine · Conseil indépendant</div>';
+  html += '<div style="font-size:clamp(18px,3.5vw,24px);font-weight:800;color:#fff;margin-bottom:8px;line-height:1.25;">Votre stratégie est prête.<br><span style="color:#5aafff;">Il ne manque plus que vous.</span></div>';
+  html += '<div style="font-size:13px;color:rgba(255,255,255,0.42);margin-bottom:22px;line-height:1.6;max-width:420px;margin-left:auto;margin-right:auto;">Un appel de 30 minutes avec Yamin pour mettre en place votre PER et construire votre stratégie patrimoniale. Gratuit, sans engagement.</div>';
+  html += '<a href="https://calendly.com/yamin-benhenia/rendez-vous-avec-yamin" target="_blank" style="display:block;background:#02539d;color:#fff;padding:17px 24px;border-radius:8px;font-size:16px;font-weight:800;text-decoration:none;margin-bottom:12px;">📅 Je réserve mon appel gratuit maintenant →</a>';
+  html += '<div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">';
+  html += '<span style="font-size:10px;color:rgba(255,255,255,0.22);">✓ 30 minutes</span><span style="font-size:10px;color:rgba(255,255,255,0.22);">✓ 100% gratuit</span><span style="font-size:10px;color:rgba(255,255,255,0.22);">✓ Sans engagement</span><span style="font-size:10px;color:rgba(255,255,255,0.22);">✓ Conseil indépendant</span>';
+  html += '</div></div>';
+
+  html += '<a class="restart" onclick="showPage(\'p-landing\')">← Recommencer l\'analyse</a>';
+  html += '<p class="disc">Simulation indicative · Aurion Patrimoine · contact@aurionpatrimoine.fr<br>Ne constitue pas un conseil en investissement au sens MIF 2 · Plafond PER Art. 163 quatervicies CGI · 2026</p>';
+
+  document.getElementById('res-body').innerHTML = html;
+  showPage('p-result');
+
+  // Chart.js
+  setTimeout(function() {
+    const stepY = Math.max(1, Math.floor(horizon/12));
+    const years = [];
+    for (let y = 0; y <= horizon; y += stepY) years.push(y);
+    if (years[years.length-1] !== horizon) years.push(horizon);
+    const labels = years.map(function(y) { return y === 0 ? 'Auj.' : (age+y) + ' ans'; });
+    new Chart(document.getElementById('projChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label:'Prudent',   data:years.map(function(y){return Math.round(calcCap(versMens,y,0.04));}),  borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.07)',  borderWidth:prof==='prudent'?3:1.5,   fill:prof==='prudent',   tension:0.4, pointRadius:0, pointHoverRadius:4 },
+          { label:'Équilibré', data:years.map(function(y){return Math.round(calcCap(versMens,y,0.065));}), borderColor:'#02539d', backgroundColor:'rgba(2,83,157,0.07)',    borderWidth:prof==='equilibre'?3:1.5, fill:prof==='equilibre', tension:0.4, pointRadius:0, pointHoverRadius:4 },
+          { label:'Dynamique', data:years.map(function(y){return Math.round(calcCap(versMens,y,0.09));}),  borderColor:'#BA7517', backgroundColor:'rgba(186,117,23,0.06)',  borderWidth:prof==='dynamique'?3:1.5, fill:prof==='dynamique', tension:0.4, pointRadius:0, pointHoverRadius:4 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor:'#000', bodyColor:'#5aafff', borderColor:'rgba(2,83,157,0.3)', borderWidth:1, padding:9,
+            callbacks: { label: function(ctx){ return ctx.dataset.label + ' : ' + Math.round(ctx.parsed.y).toLocaleString('fr-FR') + ' €'; } }
+          }
+        },
+        scales: {
+          x: { ticks:{ color:'#aaa', font:{size:10}, maxRotation:0, maxTicksLimit:8 }, grid:{ color:'rgba(0,0,0,0.04)' } },
+          y: { ticks:{ color:'#aaa', font:{size:10}, callback:function(v){return fmtK(v);} }, grid:{ color:'rgba(0,0,0,0.04)' } }
+        }
+      }
+    });
+  }, 100);
+}
+</script>
+</body>
+</html>
