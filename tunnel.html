@@ -92,12 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .fhint{font-size:11px;color:var(--txt3);margin-top:4px;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 
-/* PER Preview */
-.per-preview{background:#000;border-radius:var(--rs);padding:16px;margin:12px 0 16px;display:none;}
-.pp-title{color:rgba(255,255,255,0.35);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:12px;}
-.pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.pp-val{font-size:16px;font-weight:700;line-height:1;}
-.pp-lbl{font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;}
+/* PER Preview CSS removed */
 
 /* Consent */
 .consent{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px;margin-top:6px;}
@@ -358,16 +353,6 @@ function render() {
     html += '<div class="field"><label>Votre âge actuel *</label>';
     html += '<input class="finput" type="number" id="age" placeholder="ex : 38" min="18" max="63" oninput="updatePreview()">';
     html += '<div class="fhint">L\'horizon est calculé automatiquement : 64 ans (légal) − votre âge</div></div>';
-    html += '<div class="per-preview" id="per-prev">';
-    html += '<div class="pp-title">📊 Votre potentiel PER — calcul exact 2024</div>';
-    html += '<div class="pp-grid">';
-    html += '<div><div class="pp-val" id="pp-plafond" style="color:#5aafff">—</div><div class="pp-lbl">Plafond PER / an</div></div>';
-    html += '<div><div class="pp-val" id="pp-eco" style="color:#1D9E75">—</div><div class="pp-lbl">Économie fiscale / an *</div></div>';
-    html += '<div><div class="pp-val" id="pp-mois" style="color:#fff">—</div><div class="pp-lbl">Mois offerts par l\'État</div></div>';
-    html += '<div><div class="pp-val" id="pp-horizon" style="color:#EF9F27">—</div><div class="pp-lbl">Horizon retraite</div></div>';
-    html += '</div>';
-    html += '<div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:8px;">* TMI 30% utilisée par défaut — affinée à l\'étape suivante</div>';
-    html += '</div>';
     html += '<button class="btn" id="btn-n" onclick="nextSalaire()" disabled>Continuer →</button>';
 
   } else {
@@ -438,25 +423,9 @@ function updatePreview() {
   if (!salEl || !ageEl) return;
   const sal = parseFloat(salEl.value) || 0;
   const age = parseInt(ageEl.value) || 0;
-  const preview = document.getElementById('per-prev');
   const btn = document.getElementById('btn-n');
   const ok = sal >= 15000 && age >= 18 && age <= 63;
-  if (ok) {
-    const plafond = plafondPER(sal);
-    const tmiVal = 0.30; // default preview
-    const eco = Math.round(plafond * tmiVal);
-    const mensEco = Math.round(eco / 12);
-    const horizon = 64 - age;
-    preview.style.display = 'block';
-    document.getElementById('pp-plafond').textContent = fmt(Math.round(plafond));
-    document.getElementById('pp-eco').textContent = fmt(eco);
-    document.getElementById('pp-mois').textContent = fmt(mensEco) + '/mois';
-    document.getElementById('pp-horizon').textContent = horizon + ' ans';
-    btn.disabled = false;
-  } else {
-    preview.style.display = 'none';
-    btn.disabled = true;
-  }
+  if (btn) btn.disabled = !ok;
 }
 
 function nextSalaire() {
